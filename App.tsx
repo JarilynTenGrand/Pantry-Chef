@@ -1,117 +1,200 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Button,
+  FlatList,
+  Modal,
+  Image,
+  TouchableOpacity,
 } from 'react-native';
+import recipes from './recipes';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  const [input, setInput] = useState('');
+  const [filteredRecipes, setFilteredRecipes] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const handleSearch = () => {
+    const inputIngredients = input
+      .split(',')
+      .map(item => item.trim().toLowerCase());
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+    const matches = recipes.filter(recipe =>
+      inputIngredients.every(inputIng =>
+        recipe.ingredients.some(recipeIng =>
+          recipeIng.toLowerCase().includes(inputIng),
+        ),
+      ),
+    );
+    setFilteredRecipes(matches);
+  };
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const resetSearch = () => {
+    setInput('');
+    setFilteredRecipes([]);
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const openModal = recipe => {
+    setSelectedRecipe(recipe);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedRecipe(null);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <View style={styles.container}>
+      <Text style={styles.header}>Pantry Chef</Text>
+      <TextInput
+        style={styles.textinput}
+        placeholder="Enter ingredients..."
+        value={input}
+        onChangeText={text => setInput(text)}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <View style={styles.buttons}>
+        <Button title="Search" onPress={handleSearch} />
+        <Button title="Reset" onPress={resetSearch} />
+      </View>
+      <FlatList
+        data={filteredRecipes}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({item}) => (
+          <TouchableOpacity
+            style={styles.recipeContainer}
+            onPress={() => openModal(item)}>
+            <Text style={styles.item}>{item.name}</Text>
+            <Image
+              source={item.image}
+              style={styles.recipeImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={
+          input && filteredRecipes.length === 0 ? (
+            <Text style={styles.noResults}>No recipes found!</Text>
+          ) : null
+        }
+      />
+      {/* Modal */}
+      {selectedRecipe && (
+        <Modal transparent={true} visible={showModal}>
+          <View style={styles.centerView}>
+            <View style={styles.modalView}>
+              <Image
+                source={selectedRecipe.image}
+                style={styles.modalImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.modalTitle}>{selectedRecipe.name}</Text>
+              <Text style={styles.modalSubTitle}>Ingredients:</Text>
+              {selectedRecipe.ingredients.map((ingredient, index) => (
+                <Text key={index} style={styles.modalText}>
+                  - {ingredient}
+                </Text>
+              ))}
+              <Text style={styles.modalSubTitle}>Steps:</Text>
+              {selectedRecipe.step.map((step, index) => (
+                <Text key={index} style={styles.modalText}>
+                  {index + 1}. {step}
+                </Text>
+              ))}
+              <Button title="Close" onPress={closeModal} />
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    padding: 20,
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  header: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
+  textinput: {
     fontSize: 18,
-    fontWeight: '400',
+    color: 'black',
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 5,
   },
-  highlight: {
-    fontWeight: '700',
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  recipeContainer: {
+    backgroundColor: 'blue',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  item: {
+    fontSize: 20,
+    color: 'white',
+    marginBottom: 5,
+  },
+  recipeImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  noResults: {
+    fontSize: 18,
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  centerView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '90%',
+  },
+  modalImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalSubTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 5,
   },
 });
 
