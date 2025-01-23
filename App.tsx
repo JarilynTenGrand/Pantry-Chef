@@ -52,7 +52,7 @@ const App = () => {
     <View style={styles.container}>
       <Text style={styles.header}>Pantry Chef</Text>
       <TextInput
-        style={styles.textinput}
+        style={styles.textInput}
         placeholder="Enter ingredients..."
         value={input}
         onChangeText={text => setInput(text)}
@@ -68,12 +68,12 @@ const App = () => {
           <TouchableOpacity
             style={styles.recipeContainer}
             onPress={() => openModal(item)}>
-            <Text style={styles.item}>{item.name}</Text>
             <Image
               source={item.image}
               style={styles.recipeImage}
               resizeMode="cover"
             />
+            <Text style={styles.item}>{item.name}</Text>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  textinput: {
+  textInput: {
     fontSize: 18,
     color: 'black',
     borderWidth: 1,
@@ -140,21 +140,27 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   recipeContainer: {
-    backgroundColor: 'blue',
+    backgroundColor: '#3063cf',
     padding: 10,
     marginBottom: 10,
     borderRadius: 10,
-    alignItems: 'center',
+    flexDirection: 'row', // Layout images and text side by side
+    alignItems: 'center', // Vertically center them
   },
   item: {
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: 'bold',
     color: 'white',
-    marginBottom: 5,
+    marginLeft: 10,
+    shadowColor: 'black',
+    elevation: 5,
   },
   recipeImage: {
     width: 100,
     height: 100,
     borderRadius: 10,
+    shadowColor: 'black',
+    elevation: 5,
   },
   noResults: {
     fontSize: 18,
@@ -180,11 +186,14 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginBottom: 15,
+    shadowColor: 'black',
+    elevation: 5,
   },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: 'black',
   },
   modalSubTitle: {
     fontSize: 18,
