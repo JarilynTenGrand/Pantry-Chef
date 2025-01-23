@@ -138,14 +138,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    color: 'green',
   },
   recipeContainer: {
     backgroundColor: '#3063cf',
     padding: 10,
     marginBottom: 10,
     borderRadius: 10,
-    flexDirection: 'row', // Layout images and text side by side
-    alignItems: 'center', // Vertically center them
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   item: {
     fontSize: 24,
